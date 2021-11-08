@@ -39,37 +39,44 @@ ticket_medio = (faturamento['Valor Final'] / quantidade['Quantidade']).to_frame(
 ticket_medio = ticket_medio.rename(columns={0: 'Ticket Médio'})
 print(ticket_medio)
 
-## pede para o usuario informar o e-mail que irá receber o relatorio
+## Função que vai solicitar ao usuario informar o e-mail que irá receber o relatorio
 def informar_email():
+    # recebe o e-mail que o usuario vai digitar
     email = input("Digite o email que vai receber o relatorio: ")
+    # retornar o que o usuário digitou
     return email
 
+# Função que vai verificar se o que o usuario digitou é um e-mail válido
 def verifica_email(email):
-    # define o meu padrão
+    # define um padrão de validação de email usando expressao regular
     mypattern = re.search(r'^[a-zA-Z0-9._-]+@([a-z0-9]+)(\.[a-z]{2,3})+$', email)
 
+    # se o email for valido retorna true
     if mypattern:
         return True
     else:
         return False
 
+# chama a função para o usuario digitar o e-mail e armazena o resultado na variavel email
 email = informar_email()
+# chama a função de verificar o e-mail e armazena o resultado na variavel verifica
 verifica = verifica_email(email)
 
+# testa se o email do usuario é valido, se não for valido, solicita que o usuario digite novamente
 while verifica == False:
     email = informar_email()
     verifica = verifica_email(email)
 
 print('email validado: ', email)
 
-# montar email
+# pede que o usuario digite o assunto do email e armazena na variavel subject
 subject = input('Digite o assunto do e-mail: ')
 
 # inicia o objeto outlook
 outlook = win32.Dispatch('outlook.application')
 mail = outlook.CreateItem(0)
 
-# montar o e-mail para enviar 
+# função que vai montar o e-mail para enviar 
 def montar_email(email, subject):
     # enviar um email com o relatório
     mail.To = email
@@ -94,9 +101,11 @@ def montar_email(email, subject):
     <p>Adériton Prado</p>
     '''
 
+# função que invoca os metodos de montar email enviar e-mail, retornar a msg de e-mail enviado
 def envia_email():
     montar_email(email, subject)
     mail.Send()
     print('Email Enviado')
 
+# executa a função de mandar o e-mail
 envia_email()
