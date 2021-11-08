@@ -1,6 +1,7 @@
 # ---- importar as libs
 import pandas as pd
 import win32com.client as win32
+import re
 
 # ---- importar a base de dados
 tabela_vendas = pd.read_excel('Vendas.xls')
@@ -38,32 +39,64 @@ ticket_medio = (faturamento['Valor Final'] / quantidade['Quantidade']).to_frame(
 ticket_medio = ticket_medio.rename(columns={0: 'Ticket Médio'})
 print(ticket_medio)
 
-# enviar um e-mail com o relatorio
-# enviar um email com o relatório
+## pede para o usuario informar o e-mail que irá receber o relatorio
+def informar_email():
+    email = input("Digite o email que vai receber o relatorio: ")
+    return email
+
+def verifica_email(email):
+    # define o meu padrão
+    mypattern = re.search(r'^[a-zA-Z0-9._-]+@([a-z0-9]+)(\.[a-z]{2,3})+$', email)
+
+    if mypattern:
+        return True
+    else:
+        return False
+
+email = informar_email()
+verifica = verifica_email(email)
+
+while verifica == False:
+    email = informar_email()
+    verifica = verifica_email(email)
+
+print('email validado: ', email)
+
+# montar email
+subject = input('Digite o assunto do e-mail: ')
+
+# inicia o objeto outlook
 outlook = win32.Dispatch('outlook.application')
 mail = outlook.CreateItem(0)
-mail.To = 'your-email@gmail.com'
-mail.Subject = 'Relatório de Vendas por Loja'
-mail.HTMLBody = f'''
-<p>Prezados,</p>
 
-<p>Segue o Relatório de Vendas por cada Loja.</p>
+# montar o e-mail para enviar 
+def montar_email(email, subject):
+    # enviar um email com o relatório
+    mail.To = email
+    mail.Subject = subject
+    mail.HTMLBody = f'''
+    <p>Prezados,</p>
 
-<p>Faturamento:</p>
-{faturamento.to_html(formatters={'Valor Final': 'R$ {:,.2f}'.format})}
+    <p>Segue o Relatório de Vendas por cada Loja.</p>
 
-<p>Quantidade Vendida:</p>
-{quantidade.to_html(formatters={'Quantidade': '{:,.0f}'.format})}
+    <p>Faturamento:</p>
+    {faturamento.to_html(formatters={'Valor Final': 'R$ {:,.2f}'.format})}
 
-<p>Ticket Médio dos Produtos em cada Loja:</p>
-{ticket_medio.to_html(formatters={'Ticket Médio': 'R$ {:,.2f}'.format})}
+    <p>Quantidade Vendida:</p>
+    {quantidade.to_html(formatters={'Quantidade': '{:,.0f}'.format})}
 
-<p>Qualquer dúvida estou à disposição.</p>
+    <p>Ticket Médio dos Produtos em cada Loja:</p>
+    {ticket_medio.to_html(formatters={'Ticket Médio': 'R$ {:,.2f}'.format})}
 
-<p>Att.,</p>
-<p>Adériton Prado</p>
-'''
+    <p>Qualquer dúvida estou à disposição.</p>
 
-mail.Send()
+    <p>Att.,</p>
+    <p>Adériton Prado</p>
+    '''
 
-print('Email Enviado')
+def envia_email():
+    montar_email(email, subject)
+    mail.Send()
+    print('Email Enviado')
+
+envia_email()
